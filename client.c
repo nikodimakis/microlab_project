@@ -103,7 +103,6 @@ void welcome(){
 	lcd_data_sim('E');
 	lcd_data_sim('N');
 	lcd_data_sim('T');
-	lcd_data_sim('!');
 	return;
 }
 
@@ -135,6 +134,7 @@ void usart_receive_string(char  *input_buffer)
 		else
 			break;
 	}
+	return;
 }
 
 void lcd_print_buffer(char *input_buffer, unsigned char num)
@@ -148,9 +148,11 @@ void lcd_print_buffer(char *input_buffer, unsigned char num)
 	{
 		lcd_data_sim(input_buffer[i++]);
 	}
+	return;
 }
 
 void connect(char* ssid, char* pass){
+	
 	unsigned char command2[11] = {'E', 'S', 'P', ':', 's', 's', 'i', 'd', ':', ' ', '"'};
 	for(int i=0; i<11; i=i+1)
 	{
@@ -165,6 +167,7 @@ void connect(char* ssid, char* pass){
 	usart_transmit('"');
 	usart_transmit('\n');
 	usart_receive_string(input_buffer);
+	lcd_print_buffer(input_buffer, '1');
 	memset(input_buffer,0,sizeof(input_buffer));
 	_delay_ms(1000);
 	unsigned char command3[15] = {'E', 'S', 'P', ':', 'p', 'a', 's', 's', 'w', 'o', 'r', 'd', ':', ' ', '"'};
@@ -181,15 +184,28 @@ void connect(char* ssid, char* pass){
 	usart_transmit('"');
 	usart_transmit('\n');
 	usart_receive_string(input_buffer);
+	lcd_print_buffer(input_buffer, '2');
 	memset(input_buffer,0,sizeof(input_buffer));
 	_delay_ms(1000);
+	
 	unsigned char command[12] = {'E', 'S', 'P', ':', 'c', 'o', 'n', 'n', 'e', 'c', 't', '\n'};
 	
-	for(int i=0; i<12; i=i+1)
+	for(int i=0; i<12; i++)
 	{
 		usart_transmit(command[i]);
 		_delay_us(39);
 	}
+	usart_receive_string(input_buffer);
+	if (input_buffer[1] == 'F'){
+		memset(input_buffer,0,sizeof(input_buffer));
+		for(int i=0; i<12; i++)
+		{
+			usart_transmit(command[i]);
+			_delay_us(39);
+		}
+	}
+	usart_receive_string(input_buffer);
+	lcd_print_buffer(input_buffer, 'c');
 	return;
 }
 
@@ -205,6 +221,24 @@ void restart(){
 	return;
 }
 
+void hostIP(char *ip){
+	unsigned char command1[13] = {'E', 'S', 'P', ':', 'h', 'o', 's', 't', 'I', 'P', ':', ' ', '"'};
+	for(int i=0; i<13; i=i+1)
+	{
+		usart_transmit(command1[i]);
+		_delay_us(39);
+	}
+	for(int i=0; i<strlen(ip); i++)
+	{
+		usart_transmit(ip[i]);
+		_delay_us(39);
+	}
+	usart_transmit('"');
+	usart_transmit('\n');
+	usart_receive_string(input_buffer);
+	lcd_print_buffer(input_buffer, 'I');
+}
+
 void clientTransmit()
 {
 	unsigned char command[19] = {'E', 'S', 'P', ':', 'c', 'l', 'i', 'e', 'n', 't', 'T', 'r', 'a', 'n', 's', 'm', 'i', 't', '\n'};
@@ -213,6 +247,17 @@ void clientTransmit()
 		usart_transmit(command[i]);
 		_delay_us(39);
 	}
+	usart_receive_string(input_buffer);
+	if (input_buffer[1] == 'F'){
+		memset(input_buffer,0,sizeof(input_buffer));
+		for(int i=0; i<19; i++)
+		{
+			usart_transmit(command[i]);
+			_delay_us(39);
+		}
+	}
+	usart_receive_string(input_buffer);
+	lcd_print_buffer(input_buffer, 'T');
 }
 
 void addSensor(char *name){
@@ -273,7 +318,6 @@ void getValue(char *name){
 	}
 	usart_transmit('"');
 	usart_transmit('\n');
-	//check_state('2');
 	return;
 }
 
@@ -294,15 +338,16 @@ int main(void){
 	_delay_ms(3000);
 	//_delay_ms(3000);
 	
+	hostIP("192.168.4.3");
+	_delay_ms(3000);
+	
 	addSensor("nikodimos1");
 	usart_receive_string(input_buffer);
 	lcd_print_buffer(input_buffer, 'a');
 	_delay_ms(3000);
 	
-	connect("marketos", "marketos1");
-	usart_receive_string(input_buffer);
-	lcd_print_buffer(input_buffer, 'c');
-	_delay_ms(3000);
+	//connect("marketos", "marketo1");
+	//_delay_ms(3000);
 	
 
 	
@@ -311,9 +356,10 @@ int main(void){
 	lcd_print_buffer(input_buffer, 's');
 	_delay_ms(3000);
 	
+	connect("marketos", "marketo1");
+	_delay_ms(3000);
+	
 	clientTransmit();
-	usart_receive_string(input_buffer);
-	lcd_print_buffer(input_buffer, 'T');
 	_delay_ms(3000);
 	
 	getValue("nikodimos1");
