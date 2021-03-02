@@ -97,13 +97,18 @@ void lcd_init_sim()
 void welcome(){
 	lcd_command_sim(0x01);
 	_delay_us(1530);
-	lcd_data_sim('W');
-	lcd_data_sim('E');
-	lcd_data_sim('L');
+	lcd_data_sim('A');
 	lcd_data_sim('C');
-	lcd_data_sim('O');
-	lcd_data_sim('M');
+	lcd_data_sim('C');
 	lcd_data_sim('E');
+	lcd_data_sim('S');
+	lcd_data_sim('S');
+	lcd_data_sim(' ');
+	lcd_data_sim('P');
+	lcd_data_sim('O');
+	lcd_data_sim('I');
+	lcd_data_sim('N');
+	lcd_data_sim('T');
 	return;
 }
 
@@ -252,7 +257,7 @@ void addSensor(char *name){
 	return;
 }
 
-void sensorValue(char *name, int value){
+void sensorValue(char *name, char* temp){
 	unsigned char command[17] = {'E', 'S', 'P', ':', 's', 'e', 'n', 's', 'o', 'r', 'V', 'a', 'l', 'u', 'e', ':', '"'};
 	for(int i=0; i<17; i++)
 	{
@@ -266,11 +271,16 @@ void sensorValue(char *name, int value){
 	}
 	usart_transmit('"');
 	usart_transmit('[');
-	usart_transmit('7');
+	for(int i=0; i<strlen(temp); i++)
+	{
+		usart_transmit(temp[i]);
+		_delay_us(39);
+	}
 	usart_transmit(']');
 	usart_transmit('\n');
 	return;
 }
+
 
 void getValue(char *name){
 	unsigned char command[14] = {'E', 'S', 'P', ':', 'g', 'e', 't', 'V', 'a', 'l', 'u', 'e', ':', '"'};
@@ -298,40 +308,40 @@ int main(void){
 	lcd_init_sim();
 	welcome();
 	_delay_ms(3000);
+	
 	restart();
 	usart_receive_string(input_buffer);
 	memset(input_buffer,0,sizeof(input_buffer));
 	usart_receive_string(input_buffer);
 	memset(input_buffer,0,sizeof(input_buffer));
 	_delay_ms(3000);
-	//_delay_ms(3000);
-	/*
-	connect();
-	usart_receive_string(input_buffer);
-	lcd_print_buffer(input_buffer, '1');
-	_delay_ms(3000);
-	*/
+ 
 	addSensor("nikodimos1");
 	usart_receive_string(input_buffer);
-	lcd_print_buffer(input_buffer, '2');
+	lcd_print_buffer(input_buffer, 'a');
 	_delay_ms(3000);
 	
-	sensorValue("nikodimos1", 120);
+	sensorValue("nikodimos1", "13");
 	usart_receive_string(input_buffer);
-	lcd_print_buffer(input_buffer, '3');
+	lcd_print_buffer(input_buffer, 's');
 	_delay_ms(3000);
 	
 	getValue("nikodimos1");
 	usart_receive_string(input_buffer);
-	lcd_print_buffer(input_buffer, '4');
+	lcd_print_buffer(input_buffer, 'g');
 	_delay_ms(3000);
 	
 	accessPoint("192.168.4.2", "marketos", "marketo1");
 	usart_receive_string(input_buffer);
-	lcd_print_buffer(input_buffer, '5');
+	lcd_print_buffer(input_buffer, 'w');
 	_delay_ms(3000);
-	usart_receive_string(input_buffer);
-	lcd_print_buffer(input_buffer, '5');
+
+	while(1){
+		usart_receive_string(input_buffer);
+		lcd_print_buffer(input_buffer, 'P');
+		memset(input_buffer,0,sizeof(input_buffer));
+	}
+	
 	
 	
 	return 0;
