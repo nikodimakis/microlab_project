@@ -115,6 +115,31 @@ void printm(char* temp){
 	return;
 }
 
+void print2m(char* temp, char* name){
+	lcd_command_sim(0x01);
+	_delay_us(1530);
+	for (int i=0; i<strlen(temp); i++)
+	lcd_data_sim(temp[i]);
+	for (int i=0; i<strlen(name); i++)
+	lcd_data_sim(name[i]);
+	return;
+}
+
+void print3m(char* temp, char* name, char* value){
+	lcd_command_sim(0x01);
+	_delay_us(1530);
+	for (int i=0; i<strlen(temp); i++)
+	lcd_data_sim(temp[i]);
+	for (int i=0; i<strlen(name); i++)
+	lcd_data_sim(name[i]);
+	lcd_data_sim(' ');
+	lcd_data_sim('t');
+	lcd_data_sim('o');
+	lcd_data_sim(' ');
+	for (int i=0; i<strlen(value); i++)
+	lcd_data_sim(value[i]);
+	return;
+}
 void check_state(unsigned char num){
 	unsigned char state;
 	//clear lcd
@@ -284,7 +309,7 @@ void clientTransmit()
 }
 
 void addSensor(char *name){
-	printm("Adding sensor");
+	print2m("Adding sensor ", name);
 	_delay_ms(2000);
 	unsigned char command[16] = {'E', 'S', 'P', ':', 'a', 'd', 'd', 'S', 'e', 'n', 's', 'o', 'r', ':', ' ', '"'};
 	for(int i=0; i<16; i++)
@@ -308,7 +333,8 @@ void addSensor(char *name){
 
 
 void sensorValue(char *name, char* temp){
-	printm("setting Value");
+	print3m("set value of ", name, temp);
+
 	_delay_ms(2000);
 	unsigned char command[17] = {'E', 'S', 'P', ':', 's', 'e', 'n', 's', 'o', 'r', 'V', 'a', 'l', 'u', 'e', ':', '"'};
 	for(int i=0; i<17; i++)
@@ -342,7 +368,7 @@ void sensorValue(char *name, char* temp){
 
 
 void getValue(char *name){
-	printm("getting Value");
+	print2m("Getting Value of ", name);
 	_delay_ms(2000);
 	unsigned char command[14] = {'E', 'S', 'P', ':', 'g', 'e', 't', 'V', 'a', 'l', 'u', 'e', ':', '"'};
 	for(int i=0; i<14; i++)
@@ -378,11 +404,11 @@ int main(void){
 	
 	// creating the sensors
 	//char AllSensor[NumberOfSensors][3] = {"A_1", "A_2", "A_3", "B_1", "B_2", "B_3"};
-	
+	connect("marketos", "marketo1");
 	
 	
 	// recreate the clients IP	
-	hostIP("192.168.4.1");
+	//hostIP("192.168.4.1");
 	
 	
 	// adding all possible sensors
@@ -390,20 +416,19 @@ int main(void){
 	addSensor("A_1");
 	addSensor("A_2");
 	addSensor("B_1");
-	addSensor("B_2");
 
-	// requst the Value of sensors that client doesn't know
+	// request the Value of sensors that client doesn't know
 	sensorValue("A_1", "request");
 	sensorValue("A_2", "request");
 	
 	// let client know the Value of the others B_i
 	sensorValue("B_1", "90");
-	sensorValue("B_2", "21");
 	
 	// connecting to an Access Point
-	connect("marketos", "marketo1");
+	
 
 	// Send the Known Values to the connected AP and receiving the unknown 
+	connect("marketos", "marketo1");
 	clientTransmit();
 
 	// Printing the requested values
